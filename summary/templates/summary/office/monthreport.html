@@ -1,0 +1,73 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+  <h3> TỔNG KẾT THÁNG {{ month_display }}</h3>
+  <h3><strong> Văn phòng </strong></h3>
+
+  <form action="" method="post">
+    {% csrf_token %}
+    <p>Tháng: <input type="month" name="month-input" placeholder="yyyy-mm" required>
+    <input type="submit" value="Tìm"/></p>
+  </form>
+
+  <div class="row">
+    <div class="col-xs-2" style="margin-left:15px">
+      <form  action="" method="post">
+        {% csrf_token %}
+        <input type="hidden" name="prev-input" id="prev-input" value="{{ month_display }}">
+        <input type="submit" class="btn btn-outline-primary" value="Tìm tháng trước"/>
+      </form>
+    </div>
+    <div class="col-xs-2">&nbsp;&nbsp;</div>
+    <div class="col-xs-2">
+      <form action="" method="post">
+        {% csrf_token %}
+        <input type="hidden" name="next-input" id="next-input" value="{{ month_display }}">
+        <input type="submit" class="btn btn-outline-primary" value="Tìm tháng sau"/>
+      </form>
+    </div>
+  </div>
+
+  {% if err_mess %}
+    <br>
+    <h4 style="color:red"><strong> LỖI </strong></h4>
+    <p style="color:red"><strong>{{ err_mess }}</strong></p>
+  {% endif %}
+
+  {% if staffs_timeinfo %}
+    <br>
+    <form action="export_mreport_excel" method="post">
+      {% csrf_token %}
+      <input type="hidden" name="month-export" id="month-export" value="{{ month_display }}">
+      <input type="hidden" name="project_id" id="project_id" value="office">
+      <input type="submit" class="btn btn-success" value="Xuất file Excel" />
+    </form>
+
+    <table id="myTable" class="tablesorter">
+      <thead><tr>
+        <th> Mã NV </th>
+        <th> Họ và Tên </th>
+        <th> Bộ phận </th>
+        <th> Chức vụ </th>
+        <th> Tổng ngày công</th>
+        <th> Tổng giờ tăng ca </th>
+        <th> Tổng ngày CN </th>
+      </tr></thead>
+      <tbody class="nonCheck">
+        {% for staff, times in staffs_timeinfo.items %}
+          <tr>
+            <td>{{ staff.MaNV }}</td>
+            <td>{{ staff.name }}</td>
+            <td>{{ staff.deparment }}</td>
+            <td>{{ staff.position }}</td>
+            <td>{{ times.0 }}</td>
+            <td>{{ times.1 }}</td>
+            <td>{{ times.2 }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <br><p><strong> Không có dữ liệu tổng kết. </strong></p>
+  {% endif %}
+{% endblock %}

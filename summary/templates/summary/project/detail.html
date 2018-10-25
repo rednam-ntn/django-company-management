@@ -1,0 +1,140 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+  <h2>Dự án: <strong>{{ project.name }}</strong></h2>
+  <div style="margin-left:20px;margin-top:10px">
+    <li>Địa điểm: <b>{{ project.location }}</b></li>
+    <li>Phạm vi công việc: <b>{{ project.description|default_if_none:"-"  }}</b></li>
+    <li>Chỉ huy Trưởng: <b>{{ project.chief|default_if_none:"-" }}</b></li>
+    {% if staffs_info %}
+    <li> Số lượng Giám sát: {{ pos_count.0 }}</li>
+    <li> Số lượng Công nhân: {{ pos_count.1 }}</li>
+    {% endif %}
+    {% if user.is_superuser or user.is_staff %}
+    <li>Trạng thái: <b>{{ project.get_status_display }}</b></li>
+    <li>Số lần thanh toán : <b>{{ project.no_paid|default_if_none:"-" }}</b></li>
+    <li>Ghi chú: <b>{{ project.note|default_if_none:"-" }}</b></li>
+    {% endif %}
+  </div>
+  {% if staffs_info %}
+    <h3> Danh sách Nhân sự </h3>
+    <table id="myTable" class="tablesorter">
+      <thead><tr>
+        <th> Mã NV </th>
+        <th> Họ và Tên </th>
+        <th> Bộ phận </th>
+        <th> Chức vụ </th>
+        <th> Thời gian tham gia Công trình </th>
+      </tr></thead>
+      <tbody class="nonCheck">
+      {% for staff, info in staffs_info.items %}
+        {% if info|length < 2 %}
+          <tr>
+        {% else %}
+          <tr class="non">
+        {% endif %}
+            <td> {{ staff.MaNV }} </td>
+            <td><a href="{% url 'staff_detail' staff.id %}">{{ staff.name }}</a></td>
+            <td> {{ staff.deparment }} </td>
+            <td> {{ staff.position }} </td>
+          {% if info|length < 2 %}
+            <td> {{ info.0|date:"d/m/Y" }} </td>
+          {% else %}
+            <td class="non"> {{ info.0|date:"d/m/Y" }} - {{ info.1|date:"d/m/Y" }}</td>
+          {% endif %}
+          </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    <br>
+  {% endif %}
+
+  {% if user.is_superuser or user.is_staff %}
+    {% if p_tbtc_now or p_tbtc %}
+      <script type="text/javascript">
+        $(function() {
+          $("#TBTCTable").tablesorter({
+            sortList: [[4,0], [6,0]],
+            widgets: ['stickyHeaders', 'filter'],
+          });
+        });
+      </script>
+
+      <h3> Danh sách Thiết bị Thi công </h3>
+      <table id="TBTCTable" class="tablesorter">
+        <thead><tr>
+          <th> Mã TB </th>
+          <th> Tên </th>
+          <th> Người Quản lý </th>
+          <th> Văn bản Nhận </th>
+          <th> Ngày Nhận </th>
+          <th> Văn bản Gửi </th>
+          <th> Ngày Gửi </th>
+        </tr></thead>
+        <tbody class="nonCheck">
+        {% for manage in p_tbtc_now %}
+          <tr>
+            <td> {{ manage.unit.MaTBTC }} </td>
+            <td> {{ manage.unit.type }} </td>
+            <td> {{ manage.d_receive.sponsor }} </td>
+            <td> {{ manage.d_receive }} </td>
+            <td> {{ manage.d_receive.date_crt|date:"d/m/Y" }} </td>
+            <td> {{ manage.d_return|default_if_none:"-" }} </td>
+            <td> {{ manage.d_return.date_crt|date:"d/m/Y" }} </td>
+          </tr>
+        {% endfor %}
+        {% for manage in p_tbtc %}
+          <tr>
+            <td class="non"> {{ manage.unit.MaTBTC }} </td>
+            <td class="non"> {{ manage.unit.type }} </td>
+            <td class="non"> {{ manage.d_receive.sponsor }} </td>
+            <td class="non"> {{ manage.d_receive }} </td>
+            <td class="non"> {{ manage.d_receive.date_crt|date:"d/m/Y" }} </td>
+            <td class="non"> {{ manage.d_return|default_if_none:"-" }} </td>
+            <td class="non"> {{ manage.d_return.date_crt|date:"d/m/Y" }} </td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+      <br>
+    {% endif %}
+
+    {% if p_tbvt %}
+      <script type="text/javascript">
+        $(function() {
+          $("#TBVTTable").tablesorter({
+            sortList: [[4,0],],
+            widgets: ['stickyHeaders', 'filter'],
+          });
+        });
+      </script>
+
+      <h3> Danh sách Thiết bị Thi công </h3>
+      <table id="TBVTTable" class="tablesorter">
+        <thead><tr>
+          <th> Mã VT </th>
+          <th> Tên </th>
+          <th> Số lượng </th>
+          <th> Người Quản lý </th>
+          <th> Văn bản Xuất kho </th>
+          <th> Ngày </th>
+        </tr></thead>
+        <tbody class="nonCheck">
+        {% for manage in p_tbvt %}
+          <tr>
+            <td> {{ manage.unit.MaTBVT }} </td>
+            <td> {{ manage.unit.type }} </td>
+            <td> {{ manage.unit.quantity }} </td>
+            <td> {{ manage.document.sponsor }} </td>
+            <td> {{ manage.document }} </td>
+            <td> {{ manage.document.date_crt|date:"d/m/Y" }} </td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+      <br>
+    {% endif %}
+  {% endif %}
+
+
+{% endblock %}

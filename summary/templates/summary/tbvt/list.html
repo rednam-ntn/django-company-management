@@ -1,0 +1,76 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+  <script type="text/javascript">
+    $(function() {
+      $("#sortedTable").tablesorter({
+        sortList: [[1,0], [0,0]],
+        widgets: ['stickyHeaders', 'filter'],
+      });
+    });
+  </script>
+
+  <h3>THỐNG KÊ THIẾT BỊ VẬT TƯ NGÀY {{ date_db|date:"d/m/Y" }}</h3>
+  <div style="padding: 10px 0 15px 15px">
+    <form action="" method="post">
+      {% csrf_token %}
+      <p>Ngày: <input type="date" name="dateinput" id="myDate"
+        value="{{ date_db|date:"Y-m-d" }}" required 
+        pattern="[0-9]{4}-[0-9]{2}-[0-9]{2}">
+      <input type="submit" value="Tìm"/></p>
+    </form>
+    <div class="row">
+      <div class="col-xs-2">
+        <form  action="" method="post">
+          {% csrf_token %}
+          <input type="hidden" name="prev-input" id="prev-input" value="{{ date_db|date:"d/m/Y" }}">
+          <input type="submit" class="btn btn-outline-primary" value="Tìm ngày hôm trước"/>
+        </form>
+      </div>
+      <div class="col-xs-2">&nbsp;&nbsp;</div>
+      <div class="col-xs-2">
+        <form action="" method="post">
+          {% csrf_token %}
+          <input type="hidden" name="next-input" id="next-input" value="{{ date_db|date:"d/m/Y" }}">
+          <input type="submit" class="btn btn-outline-primary" value="Tìm ngày hôm sau"/>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <form action="export_tbtc_excel" method="post">
+    {% csrf_token %}
+    <input type="hidden" name="date-export" id="date-export" value="{{ date_db|date:"d/m/Y" }}">
+    <!-- change hidden to submit -->
+    <input type="hidden" class="btn btn-success" value="Xuất file Excel" />
+  </form>
+
+  {% if tbvt_site_list %}
+    <table id="sortedTable" class="tablesorter">
+      <thead><tr>
+        <th> Công trình </th>
+        {% for tb in tbvt_sorted_list %}
+          <th> {{ tb.0 }} </th>
+        {% endfor %}
+      </tr></thead>
+      <tbody class="nonCheck"><tr>
+        <td><strong> Kho </strong></td>
+        {% for tb in tbvt_sorted_list %}
+          <td><strong> {{ tb.1 }} </strong></td>
+        {% endfor %}
+        {% for project, tbvt_list_sorted in tbvt_site_list.items %}
+      </tr><tr>
+        <td><a href="{{ project.get_detail_url }}">{{ project }}</a></td>
+        {% for sum in tbvt_list_sorted %}
+          {% if sum > 0 %}
+            <td><strong>{{ sum }}</strong></td>
+          {% elif sum == 0 %}
+            <td></td>
+          {% endif %}
+        {% endfor %}
+      </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% endif %}
+{% endblock %}

@@ -1,0 +1,94 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+  <script type="text/javascript">
+    $(function() {
+      $("#sortedTable").tablesorter({
+        sortList: [[2,0]]
+      });
+    });
+  </script>
+
+  {% if staffs %}
+  <h2>Danh sách nhân viên văn phòng:</h2>
+    <table id="sortedTable" class="tablesorter">
+      <thead><tr>
+        <th> Mã NV </th>
+        <th> Họ và Tên </th>
+        <th> Chức vụ </th>
+        <th> Bộ phận </th>
+        {% if user.is_authenticated %}
+          <th> Vào 1 </th>
+          <th> Ra 1 </th>
+          <th> Vào 2 </th>
+          <th> Ra 2 </th>
+          <th> Vào 3 </th>
+          <th> Ra 3 </th>
+        {% endif %}
+      </tr></thead>
+      <tbody>
+        {% for staff, logs in staffs.items %}
+          <tr>
+            <td>{{ staff.MaNV }}</td>
+            <td><a href="{% url 'staff_detail' staff.pk %}">{{ staff.name }}</a></td>
+            <td>{{ staff.position }}</td>
+            <td>{{ staff.deparment }}</td>
+            {% if user.is_authenticated %}
+              {% if perms.summary.office_check or user.is_superuser or user.is_staff %}
+                {% if logs|length > 0 %}
+                  {% for log in logs %}
+                    {% if log.in1 %}
+                      <td> {{ log.in1|time:"H:i" }} </td>
+                    {% else %}
+                      <td class="non"></td>
+                    {% endif %}
+                    {% if log.out1 %}
+                      <td> {{ log.out1|time:"H:i" }} </td>
+                    {% else %}
+                      <td class="non"></td>
+                    {% endif %}
+                    {% if log.in2 %}
+                      <td> {{ log.in2|time:"H:i" }} </td>
+                    {% else %}
+                      <td class="non"></td>
+                    {% endif %}
+                    {% if log.out2 %}
+                      <td> {{ log.out2|time:"H:i" }} </td>
+                    {% else %}
+                      <td class="non"></td>
+                    {% endif %}
+                    {% if log.in3 %}
+                      <td> {{ log.in3|time:"H:i" }} </td>
+                    {% else %}
+                      <td class="non"></td>
+                    {% endif %}
+                    {% if log.out3 %}
+                      <td> {{ log.out3|time:"H:i" }} </td>
+                    {% else %}
+                      <td class="non"></td>
+                    {% endif %}
+                  {% endfor %}
+                {% else %}
+                  <td class="non"></td><td class="non"></td><td class="non"></td>
+                  <td class="non"></td><td class="non"></td><td class="non"></td>
+                {% endif %}
+              {% else %}
+                <td></td><td></td><td></td>
+                <td></td><td></td><td></td>
+                <td></td>
+              {% endif %}
+            {% endif %}
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    {% if perms.summary.office_check %}
+      <a href="{% url 'office_check' %}" class="btn btn-warning">Chấm công</a>
+    {% endif %}
+    <a href="{% url 'o_d_report' %}" class="btn btn-info">Công Ngày </a>
+    <a href="{% url 'o_m_report' %}" class="btn btn-success">Công Tháng </a>
+  {% else %}
+    <strong><p>Chưa có nhân viên nào trong dữ liệu.</p></strong>
+  {% endif %}
+{% endblock %}

@@ -1,0 +1,160 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+  {% if err_mess %}
+  <h3>Lỗi</h3>
+  <p> {{err_mess}} </p>
+  {% endif %}
+
+  {% if projects %}
+    <script type="text/javascript">
+      $(function() {
+        $("#m" ).change(function() {
+          if	($( "#m" ).val() != ''){
+            $("#d").prop('disabled', true);
+            $("#subButton").prop('disabled', false);}
+          else if ($( "#m" ).val() == '') {
+            $("#d").prop('disabled', false);
+            $("#subButton").prop('disabled', true);}
+        });
+        $("#d" ).change(function() {
+          if	($( "#d" ).val() != ''){
+            $("#m").prop('disabled', true);
+            $("#subButton").prop('disabled', false);}
+          else if ($( "#d" ).val() == '') {
+            $("#m").prop('disabled', false);
+            $("#subButton").prop('disabled', true);}
+        });
+
+        $("#sortedTable1").tablesorter({
+          sortList: [[2,0]],
+          widgets: ['stickyHeaders', 'filter', 'math'],
+          widgetOptions: {
+            math_mask: '',
+            filter_searchDelay : 300,
+            filter_formatter: {
+              0: function($cell, indx) {
+                return $.tablesorter.filterFormatter.select2($cell, indx, {
+                  match: false,
+                  cellText : 'Chọn',
+                });
+              },
+            },
+
+            filter_selectSource: {
+              0: function(table, column, onlyAvail) {
+                var array = $.tablesorter.filter.getOptions(table, column, onlyAvail);
+                return array;
+              },
+            },
+
+          },
+        });
+      });
+    </script>
+
+    {% if user.is_superuser or user.is_staff %}
+      <form action="" method="post" style="padding: 5px 5px 5px; border: 1px solid lightgray;">
+        {% csrf_token %}
+          <h3>Tính công</h3>
+          <p>Nơi làm việc: <select name="site">
+            <option value="office">Văn Phòng</option>
+          {% for project in projects %}
+            <option value="{{ project.id }}">{{ project.name }}</option>
+          {% endfor %}
+        </select></p>
+        <p>Tháng: <input type="month" id="m" name="m_input" placeholder="yyyy-mm"></p>
+        <p>Ngày: <input type="date" id="d" name="d_input"></p>
+        <input type="submit" value="Tìm" id="subButton" disabled>
+      </form>
+    {% endif %}
+
+    <h2>Danh sách:</h2>
+    <table id="sortedTable1" class="tablesorter">
+      <thead><tr>
+        <th> ID </th>
+        <th> Nơi làm việc </th>
+        <th> Địa điểm </th>
+        {% if user.is_authenticated %}
+          <th> Công việc </th>
+        {% endif %}
+        <th class="filter-false"> Số lượng GS </th>
+        <th class="filter-false"> Số lượng CN/NV </th>
+        {% if user.is_authenticated %}
+          <th> Chỉ hủy </th>
+          <th class="filter-false"> Công Ngày </th>
+          <th class="filter-false"> Công Tháng </th>
+        {% endif %}
+        {% if user.is_superuser or user.is_staff %}
+          <th> Thanh toán </th>
+          <th> Trạng Thái </th>
+          <th> Ghi chú </th>
+        {% endif %}
+      </tr></thead>
+
+      <tfoot><tr>
+          {% if user.is_authenticated %}
+            <th colspan="4"> Tổng </th>
+          {% else %}
+            <th colspan="3"> Tổng </th>
+          {% endif %}
+            <th data-math="col-sum">col-sum</th>
+            <th data-math="col-sum">col-sum</th>
+          {% if user.is_superuser or user.is_staff %}
+            <th colspan="6" class="non"></th>
+          {% elif user.is_authenticated %}
+            <th colspan="3" class="non"></th>
+          {% endif %}
+      </tr></tfoot>
+
+      <tbody class="nonCheck">
+        <tr class="non">
+          <td>VP</td>
+          <td><a href="{% url 'office_detail' %}">Văn phòng</a></td>
+          <td> -- </td>
+          {% if user.is_authenticated %}
+            <td class="non"></td>
+          {% endif %}
+          <td class="non"></td>
+          <td> {{o_staff_count}} </td>
+          {% if user.is_authenticated %}
+            <td class="non"></td>
+            <td><a href="{% url 'office_check' %}"> Công Ngày </a></td>
+            <td><a href="{% url 'o_m_report' %}"> Công Tháng </a></td>
+          {% endif %}
+          {% if user.is_superuser or user.is_staff %}
+            <td class="non" colspan="3"></td>
+          {% endif %}
+        </tr>
+
+        {% for project, pos_count in projects.items %}
+          <tr>
+            <td>{{ project.id }}</td>
+            <td><a href="{{ project.get_detail_url }}">{{ project.name }}</a></td>
+            <td>{{ project.location }}</td>
+            {% if user in project.allowed_users.all or user.is_superuser or user.is_staff %}
+              <td>{{ project.description|default_if_none:"-" }}</td>
+            {% elif user.is_authenticated %}
+              <td class="non"></td>
+            {% endif %}
+            <td> {{ pos_count.0 }} </td>
+            <td> {{ pos_count.1 }} </td>
+            {% if user.is_authenticated %}
+              <td>{{ project.chief|default_if_none:"-" }}</td>
+              <td><a href="{{ project.get_check_url }}">Công Ngày </a></td>
+              <td><a href="{{ project.get_monthreport_url }}">Công Tháng </a></td>
+            {% endif %}
+            {% if user.is_superuser or user.is_staff %}
+              <td> {{ project.no_paid|default_if_none:"-" }} </td>
+              <td>{{ project.get_status_display }}</td>
+              <td> {{ project.note|default_if_none:"-" }} </td>
+            {% endif %}
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p><strong>Chưa có dự án nào trong dữ liệu.</strong></p>
+  {% endif %}
+  <br>
+{% endblock %}

@@ -1,0 +1,30 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+  <h3><strong>{{ staff.name }}</strong></h3>
+  <div style="margin-left:20px;margin-top:10px">
+    <li> Mã Nhân Viên: <strong>{{ staff.MaNV }}</strong> </li>
+    <li> Bộ phận:<strong> {{ staff.deparment }} </strong> </li>
+    <li> Chức vụ:<strong> {{ staff.position }} </strong> </li>
+  </div>
+  {% if project_infos|length > 0 %}
+    <ul class="list-group list-group-flush">
+      {% for project, info in project_infos.items %}
+        <li class="list-group-item">
+          <p><strong><a href="{% url 'project_detail' project.pk %}">{{ project.name }}</a></strong> - {{project.location}} </p>
+          <p>
+            <strong>Thời gian tham gia Dự án:</strong>
+            {% if info|length > 1 %}
+              {{ info.0|date:"d/m/Y" }} - {{ info.1|date:"d/m/Y" }}
+            {% else %}
+              {{ info|date:"d/m/Y" }}
+            {% endif %}
+          </p>
+        </li>
+      {% endfor %}
+    </ul>
+  {% elif staff.office is not True %}
+    <br>
+    <div style="margin-left:20px"><li>Chưa tham gia dự án nào.</li></div>
+  {% endif %}
+{% endblock %}

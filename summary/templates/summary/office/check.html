@@ -1,0 +1,136 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+  {% if err_mess %}
+    <h2 style="color:red"><strong> LỖI </strong></h2>
+    <p style="margin-left: 10px"><strong> {{ err_mess }}</strong></p>
+    <p><strong><a href="{{ office_check }}"> Quay lại trang Chấm công </a></strong></p>
+  {% endif %}
+
+  {% if staffs %}
+    <script type="text/javascript">
+      $(function() {
+        $('input.timepicker').timepicker({
+          timeFormat: 'HH:mm',
+          interval: 15,
+          minTime: new Date(0, 0, 0, 0, 0, 0),
+          maxTime: new Date(0, 0, 0, 8, 0, 0),
+          startTime: new Date(0, 0, 0, 0, 0 ,0),
+          defaultTime: 'value',
+          dropdown: true,
+          dynamic: false,
+          scrollbar: false,
+        });
+
+        $('input.checkbox').change(function(){
+          $(this).parent().children(":first").prop('disabled', $(this).prop('checked') == false);
+        }).change();
+      });
+    </script>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/switch.css' %}">
+    {% load tdelta %}
+
+    <h3> TỔNG KẾT NGÀY <b>{{ date_db|date:"d/m/Y" }}</b></h3>
+    <h3><strong>Văn phòng </strong></h3>
+
+    <form action="" method="post">
+      {% csrf_token %}
+      <p>Ngày: <input type="date" name="dateinput"
+        value="{{ date_db|date:"Y-m-d" }}" required
+        pattern="[0-9]{4}-[0-9]{2}-[0-9]{2}">
+      <input type="submit" value="Tìm"/></p>
+    </form>
+
+    <div class="row">
+      <div class="col-xs-2" style="margin-left:15px">
+        <form  action="" method="post">
+          {% csrf_token %}
+          <input type="hidden" name="prev-input" id="prev-input" value="{{ date_db|date:"Y-m-d" }}">
+          <input type="submit" class="btn btn-outline-primary" value="Tìm ngày hôm trước"/>
+        </form>
+      </div>
+      <div class="col-xs-2">&nbsp;&nbsp;</div>
+      <div class="col-xs-2">
+        <form action="" method="post">
+          {% csrf_token %}
+          <input type="hidden" name="next-input" id="next-input" value="{{ date_db|date:"Y-m-d" }}">
+          <input type="submit" class="btn btn-outline-primary" value="Tìm ngày hôm sau"/>
+        </form>
+      </div>
+    </div>
+
+    <form action="" method="post">
+      {% csrf_token %}
+      <table id="myTable" class="tablesorter">
+        <thead><tr>
+          <th> Mã Nhân viên </th>
+          <th> Tên </th>
+          <th> Bộ phận </th>
+          <th> Chức vụ </th>
+          <th class="filter-false" style="width: 80px"> Ca Sáng </th>
+          <th class="filter-false" style="width: 80px"> Ca Chiều </th>
+          <th class="filter-false" style="width: 100px"> Tăng Ca </th>
+        </tr></thead>
+        <tbody>
+          {% for staff, log in staffs.items %}
+            <tr>
+              <td>{{ staff.MaNV }}</td>
+              <td>{{ staff.name }}</td>
+              <td>{{ staff.deparment }}</td>
+              <td>{{ staff.position }}</td>
+              <td><div class="switch">
+                {% if log.shift1 %}
+                  <input type="checkbox" class="switch-checkbox" checked
+                  name="shift1-_-=-_-{{log.staff.id}}"
+                  id="shift1-_-=-_-{{log.staff.id}}">
+                {% else %}
+                  <input type="checkbox" class="switch-checkbox"
+                  name="shift1-_-=-_-{{log.staff.id}}"
+                  id="shift1-_-=-_-{{log.staff.id}}">
+                {% endif %}
+                <label class="switch-label" for="shift1-_-=-_-{{log.staff.id}}">
+                  <span class="switch-inner"></span>
+                  <span class="switch-switch"></span>
+                </label>
+              </div></td>
+              <td><div class="switch">
+                {% if log.shift2 %}
+                  <input type="checkbox" class="switch-checkbox" checked
+                  name="shift2-_-=-_-{{log.staff.id}}"
+                  id="shift2-_-=-_-{{log.staff.id}}">
+                {% else %}
+                  <input type="checkbox" class="switch-checkbox"
+                  name="shift2-_-=-_-{{log.staff.id}}"
+                  id="shift2-_-=-_-{{log.staff.id}}">
+                {% endif %}
+                <label class="switch-label" for="shift2-_-=-_-{{log.staff.id}}">
+                  <span class="switch-inner"></span>
+                  <span class="switch-switch"></span>
+                </label>
+              </div></td>
+              {% if log.shift3 %}
+                <td class="non"><input class="timepicker" disabled
+                  name="shift3-_-=-_-{{log.staff.id}}"
+                  value="{{ log.shift3|tdelta }}"/>
+                  <input class="checkbox" type="checkbox">
+                </td>
+              {% else %}
+                <td><input class="timepicker"
+                  name="shift3-_-=-_-{{log.staff.id}}">
+                  <input class="checkbox" type="checkbox">
+                </td>
+              {% endif %}
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      <input type="hidden" name="dateinput"
+      value="{{ date_db|date:"Y-m-d" }}">
+      {% if perms.summary.office_check or user.is_superuser %}
+        <input type="submit" value="Chấm công" />
+      {% endif %}
+    </form>
+  {% endif %}
+
+{% endblock %}

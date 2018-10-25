@@ -1,0 +1,140 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+  <script type="text/javascript">
+    $(function() {
+      $("#sortedTable").tablesorter({
+        sortList: [[6,1],[2,0]],
+        widgets: ['stickyHeaders', 'filter'],
+      });
+
+      $("#sumTable").tablesorter({
+        widgets: ['math'],
+        widgetOptions: {
+          math_mask     : '',
+        }
+      });
+    });
+  </script>
+
+  <h3>THỐNG KÊ NHÂN SỰ NGÀY {{ date_db|date:"d/m/Y" }}</h3>
+  <div style="padding: 10px 0 15px 15px">
+    <form action="" method="post">
+      {% csrf_token %}
+      <p>Ngày: <input type="date" name="dateinput" id="myDate"
+        value="{{ date_db|date:"Y-m-d" }}" required
+        pattern="[0-9]{4}-[0-9]{2}-[0-9]{2}">
+      <input type="submit" value="Tìm"/></p>
+    </form>
+    <div class="row">
+      <div class="col-xs-2">
+        <form  action="" method="post">
+          {% csrf_token %}
+          <input type="hidden" name="prev-input" id="prev-input" value="{{ date_db|date:"d/m/Y" }}">
+          <input type="submit" class="btn btn-info" value="Tìm ngày hôm trước"/>
+        </form>
+      </div>
+      <div class="col-xs-2">&nbsp;&nbsp;</div>
+      <div class="col-xs-2">
+        <form action="" method="post">
+          {% csrf_token %}
+          <input type="hidden" name="next-input" id="next-input" value="{{ date_db|date:"d/m/Y" }}">
+          <input type="submit" class="btn btn-success" value="Tìm ngày hôm sau"/>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <h4> Thống kê theo chức vụ</h4>
+  <table id="sumTable" class="tablesorter">
+    <thead><tr>
+      <th> Chức vụ </th>
+      <th> Số lượng </th>
+    </tr></thead>
+    <tfoot><tr>
+      <th> Tổng </th>
+      <th data-math="col-sum">col-sum</th>
+    </tr></tfoot>
+    <tbody>
+      {% for pos, count in pos_count.items %}
+        <tr>
+          <td>{{ pos }}</td>
+          <td>{{ count }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  {% if p_staffs or o_staffs %}
+    <h4> Danh sách nhân sự </h4>
+    <table id="sortedTable" class="tablesorter">
+      <thead><tr>
+        <th> Mã NV </th>
+        <th> Họ và Tên </th>
+        <th> Chức vụ </th>
+        <th> Bộ phận </th>
+        <th> Ngày vào làm </th>
+        <th> Ngày nghỉ việc </th>
+        <th> Nơi làm việc </th>
+        <th> Ngày tham gia công trình </th>
+        <th> Ngày rời khỏi công trình </th>
+      </tr></thead>
+      <tbody>
+        <!-- PROJECT -->
+        {% for staff, allos in p_staffs.items %}
+          <tr>
+            <td>{{ staff.MaNV }}</td>
+            <td><a href="{% url 'staff_detail' staff.pk %}">{{ staff.name }}</a></td>
+            <td>{{ staff.position }}</td>
+            <td>{{ staff.deparment }}</td>
+            <td>{{ staff.d_in|date:"d/m/Y" }}</td>
+            {% if staff.d_out == None %}
+            <td class="non"></td>
+            {% else %}
+            <td>{{ staff.d_out|date:"d/m/Y" }}</td>
+            {% endif %}
+            {% if allos|length > 0 %}
+              {% for allo in allos %}
+                {% if forloop.first is not True %} <tr class="tablesorter-childRow"> {% endif %}
+                <td><a href="{% url 'project_detail' allo.project.id %}"> {{ allo.project }} </a></td>
+                <td>{{ allo.d_in|date:"d/m/Y" }}</td>
+                {% if allo.d_out == None %}
+                  <td class="non"></td>
+                {% else %}
+                  <td>{{ allo.d_out|date:"d/m/Y" }}</td>
+                {% endif %}
+                </tr>
+              {% endfor %}
+            {% else %}
+            <td> Chưa được phân công </td>
+            <td class="non"></td>
+            <td class="non"></td>
+            </tr>
+            {% endif %}
+        {% endfor %}
+        <!-- OFFICE -->
+        {% for staff in o_staffs %}
+          <tr>
+            <td>{{ staff.MaNV }}</td>
+            <td><a href="{% url 'staff_detail' staff.pk %}">{{ staff.name }}</a></td>
+            <td>{{ staff.position }}</td>
+            <td>{{ staff.deparment }}</td>
+            <td>{{ staff.d_in|date:"Y/m/d" }}</td>
+            {% if staff.d_out == None %}
+              <td class="non"></td>
+            {% else %}
+              <td>{{ staff.d_out|date:"Y/m/d" }}</td>
+            {% endif %}
+            <td><a href="{% url 'office_detail' %}"> Văn phòng </a></td>
+            <td class="non"></td><td class="non"></td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% endif %}
+
+  {% if p_staffs|length == 0 and o_staffs|length == 0 %}
+    <p>Chưa có nhân viên nào trong dữ liệu.</p>
+    <br>
+  {% endif %}
+{% endblock %}

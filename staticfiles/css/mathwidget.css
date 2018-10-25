@@ -1,0 +1,27 @@
+/* make all calculated values bold */
+.tablesorter tbody td[data-math] {
+  font-weight: bold;
+}
+/* darken first & last column */
+.tablesorter tbody th,
+.tablesorter tbody tr td.totals {
+  font-weight: normal;
+  background-color: #ddd;
+  text-shadow: none;
+}
+/* even darker tbody info row & tfoot */
+.tablesorter tbody.tablesorter-infoOnly th,
+.tablesorter tfoot th,
+.tablesorter tfoot th.tablesorter-headerAsc,
+.tablesorter tfoot th.tablesorter-headerDesc {
+  background-color: #aaa;
+  font-weight: bold;
+  background-color: #aaa;
+  text-shadow: none;
+}
+/* align decimals in Grand Total column */
+.align-decimal {
+  width: 100px;
+  display: inline-block;
+  text-align: right;
+}

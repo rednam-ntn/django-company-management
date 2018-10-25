@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+  {% block title %}<title> Trang Quản lý </title>{% endblock %}
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Add additional CSS in static file -->
+  {% load static %}
+  <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+
+    <!-- Bootstrap CSS and JS 4.1.3 -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+
+    <!-- JQuery 3.3.1 -->
+  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+
+    <!-- Ajax popper 1.14.3 -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+
+  <!-- JQuery tablesorter mainstream-->
+  <!--
+  <script type="text/javascript" src="{{ STATIC_URL }} /static/js/jquery.tablesorter.min.js"></script>
+  -->
+    <!-- JQuery timepicker -->
+  <link rel="stylesheet" href="{% static 'css/jquery.timepicker.css' %}">
+  <script type="text/javascript" src="{{ STATIC_URL }} /static/js/jquery.timepicker.min.js"></script>
+
+
+  <!-- JQuery tablesorter FOLK -->
+  <link rel="stylesheet" href="{% static 'css/tablesorter.css' %}">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.30.7/js/jquery.tablesorter.min.js" integrity="sha256-nPFf1yvAQWRdlVGNYU4K7uQs7eCurs9le+duGh5bFqQ=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.30.7/js/jquery.tablesorter.widgets.min.js" integrity="sha256-2z3YDoaDzhld6PqKNfTnvULQSopZG2tX1vpxgTMOyi0=" crossorigin="anonymous"></script>
+
+    <!-- math widget -->
+  <link rel="stylesheet" href="{% static 'css/mathwidget.css' %}">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.30.7/js/widgets/widget-math.min.js" integrity="sha256-AWnLXYh3u92Q3lX+StkckVPReM/VGqreLKAtMHhcWf0=" crossorigin="anonymous"></script>
+
+  <!-- Select2 code -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/select2/3.4.6/select2.min.css" integrity="sha256-AjKvCncQrnSG8d6HXOMidusQHOG9gqBr7gI3fjZ6E8E=" crossorigin="anonymous" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/3.4.6/select2.min.js" integrity="sha256-HfoYjolKUlHVwSI6A1XWT3GhDKdyMl2pz3peZhEGibI=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.30.7/js/widgets/widget-filter-formatter-select2.min.js" integrity="sha256-UY/Vtuox8ZFROJHLv/3WoqKJQWQK+yscwD9W0oFNYPU=" crossorigin="anonymous"></script>
+
+
+  <link href="{% static 'css/multiselect.css' %}" media="screen" rel="stylesheet" type="text/css">
+  <script type="text/javascript" src="{{ STATIC_URL }} /static/js/jquery.multi-select.js"></script>
+
+
+  <!-- call tablesorter for default -->
+  <script type="text/javascript">
+    $(function() {
+      $("#myTable").tablesorter({
+        sortList: [[1,1]],
+      });
+    });
+  </script>
+
+</head>
+
+<body>
+  <h1> TRANG QUẢN LÝ </h1>
+  <div class="container-fluid">
+
+    {% block navigation %}
+      <ul class="topnav">
+        <li><a href="{% url 'index' %}"> Giới thiệu </a></li>
+
+        {% if perms.summary.office_check %}
+          <li class="dropdown">
+            <a href="{% url 'staff_list' %}" class="dropbtn"> Quản lý Nhân sự </a>
+            <div class="dropdown-content">
+              <a class="dr-cont" href="{% url 'staff_list' %}">Hiển thị</a>
+              <a class="dr-cont" href="{% url 'site_list' %}">Chấm công</a>
+              <a class="dr-cont" href="{% url 'staffs_history' %}"> Thống kê theo Thời gian</a>
+              <a class="dr-cont" href="{% url 'admin:summary_staff_changelist' %}"> Tạo & Điều chỉnh Thông tin</a>
+            </div>
+          </li>
+        {% elif user.is_authenticated %}
+          <li><a href="{% url 'staff_list' %}"> Nhân sự </a></li>
+          <li><a href="{% url 'site_list' %}"> Công trình </a></li>
+        {% endif %}
+
+        {% if perms.summary.manage_TBTC %}
+          <li class="dropdown">
+            <a href="{% url 'tbtc_list' %}" class="dropbtn"> Quản lý TBTC </a>
+            <div class="dropdown-content">
+              <a class="dr-cont" href="{% url 'tbtc_list' %}">Thống kê</a>
+              <a class="dr-cont" href="{% url 'admin:summary_tbtc_changelist' %}"> Tạo & Điều chỉnh Thông tin Thiết bị</a>
+              <a class="dr-cont" href="{% url 'admin:summary_tbtcdocument_changelist' %}"> Tạo & Điều chỉnh Thông tin Văn bản</a>
+            </div>
+          </li>
+        {% endif %}
+
+        {% if perms.summary.manage_TBVT %}
+          <li class="dropdown">
+            <a href="{% url 'tbvt_list' %}" class="dropbtn"> Quản lý TBVT </a>
+            <div class="dropdown-content">
+              <a class="dr-cont" href="{% url 'tbvt_list' %}">Thống kê</a>
+              <a class="dr-cont" href="{% url 'admin:summary_tbvt_changelist' %}"> Tạo & Điều chỉnh Thông tin Thiết bị</a>
+              <a class="dr-cont" href="{% url 'admin:summary_tbvtdocument_changelist' %}"> Tạo & Điều chỉnh Thông tin Văn bản</a>
+            </div>
+          </li>
+        {% endif %}
+        {% if perms.competence.abi_test %}
+          <li><a href="{% url 'staffs_tests' %}"> Đánh giá Nhân sự </a></li>
+        {% endif %}
+        {% if user.is_authenticated %}
+          <li class="account"><a href="{% url 'logout'%}?next={{request.path}}"> Thoát </a></li>
+          <li class="active"><a> {{ user.get_username }} </a></li>
+        {% else %}
+          <li class="active"><a href="{% url 'login'%}?next={{request.path}}"> Đăng nhặp </a></li>
+        {% endif %}
+        {% if user.is_superuser or user.is_staff %}
+          <li class="account"><a href="{% url 'admin:index' %}"> Admin </a></li>
+        {% endif %}
+      </ul>
+    {% endblock %}
+    <div class="cont">
+      {% block content %}{% endblock %}
+    </div>
+    <!-- Generate page list and next page button -->
+    <div>
+      {% block pagination %}
+        {% if is_paginated %}
+          <div class="pagination">
+            <span class="page-links">
+              {% if page_obj.has_previous %}
+                <a href="{{ request.path }}?page={{ page_obj.previous_page_number }}">Previous</a>
+              {% endif %}
+              <span class="page-current">
+                Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+              </span>
+              {% if page_obj.has_next %}
+                <a href="{{ request.path }}?page={{ page_obj.next_page_number }}">Next</a>
+              {% endif %}
+            </span>
+          </div>
+        {% endif %}
+      {% endblock %}
+    </div>
+  </div>
+</body>
+</html>

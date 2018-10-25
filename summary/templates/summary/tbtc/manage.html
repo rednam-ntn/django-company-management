@@ -1,0 +1,91 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+<script type="text/javascript">
+  $(function() {
+    $("#sortedTable").tablesorter({
+      sortList: [[5,0],[6,0],[4,0]],
+      /**
+      widgets: ['stickyHeaders', 'filter'],
+      **/
+    });
+  });
+</script>
+  <div style="display: inline-block; width: 100%;">
+    <div style="float: left;">
+      <h3>THÔNG TIN THIẾT BỊ</h3>
+      <div style="margin-left: 15px;">
+        <h5>Mã: <strong>{{ tb.MaTBTC }}</strong></h5>
+        <h5>Tên: <strong>{{ tb.type }}</strong></h5>
+        <h5>Nhãn hiệu: <strong>{{ tb.brand }}</strong></h5>
+        <h5>Ngày mua: <strong>{{ tb.d_in }}</strong></h5>
+        <h5>Địa điểm hiện tại: <strong><a href="{{ cur_manage.1.get_detail_url }}">{{ cur_manage.1 }}</a></strong> </h5>
+        <h5>Người quản lý hiện tại: <strong>{{ cur_manage.2 }}</strong> </h5>
+      </div>
+    </div>
+    <div style="float: right; border: 2px solid lightgray; padding: 15px 15px 15px 15px;">
+      <h4>CHUYỂN TIẾP THIẾT BỊ</h4>
+      <div style="float: left; margin-left: 15px;">
+        <form action="" method="post">
+          {% csrf_token %}
+          <p> Địa điểm:
+          <select name="next-site">
+            {% if cur_manage.1 == "Kho" %}
+             {% for p in project_list %}
+              <option value="{{ p }}">{{ p.name }}</option>
+             {% endfor %}
+            {% else %}
+              <option value="Kho">Kho</option>
+              {% for p in project_list %}
+                {% if cur_manage.1 != p %}
+                  <option value="{{ p }}">{{ p.name }}</option>
+                {% endif %}
+              {% endfor %}
+            {% endif %}
+          </select></p>
+          <p> Người quản lý:
+          <select name="next-sponsor">
+           {% for s in sponsor_list %}
+            {% if cur_manage.1 != "Kho" %}
+              {% if s.name == "Võ Song Hy"%}
+                <option selected value="{{ s }}">{{ s.name }}</option>
+              {% else %}
+                <option value="{{ s }}">{{ s.name }}</option>
+              {% endif %}
+            {% else %}
+              <option value="{{ s }}">{{ s.name }}</option>
+            {% endif %}
+           {% endfor %}
+          </select></p>
+          <input type="submit" class="btn btn-primary" value="Chuyển tiếp"/>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  {% if manage_list %}
+  <hr>
+  <h3> LỊCH SỬ THIẾT BỊ </h3>
+    <table id="sortedTable" class="tablesorter">
+      <thead><tr>
+        <th> Mã Văn bản </th>
+        <th> Nơi tiếp nhận </th>
+        <th> Người quản lý </th>
+        <th> Ngày </th>
+      </tr></thead>
+      <tbody>
+        {% for item in manage_list %}
+          <tr>
+            <td>{{ item.0 }}</td>
+            <td><a href="{{ item.1.get_detail_url }}">{{ item.1 }}</a></td>
+            <td>{{ item.2 }}</td>
+            <td>{{ item.3|date:"d/m/Y" }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% endif %}
+
+
+
+{% endblock %}

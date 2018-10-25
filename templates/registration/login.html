@@ -1,0 +1,32 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+  <div style="margin-top: 20px">
+  {% if form.errors %}
+    <h3 style="text-align: center">Tên đăng nhập và mật khẩu không khớp, vui lòng kiểm tra lại.</h3>
+  {% endif %}
+
+  {% if next %}
+    {% if user.is_authenticated %}
+      <h3 style="text-align: center">Tài khoản của bạn kô có quyền truy cập trang này, Vui lòng đăng nhập bằng tài khoản hợp lệ.</h3>
+    {% else %}
+      <h3 style="text-align: center">Vui lòng đăng nhập để tiếp tục.</h3>
+      <br>
+    {% endif %}
+  {% endif %}
+  </div>
+
+  <div class="login-page">
+    <div class="form">
+      <form class="login-form" method="post" action="{% url 'login' %}">
+        {% csrf_token %}
+        <p class="message"> Tài khoản </p>
+        <p class="input"> {{ form.username }} </p>
+        <p class="message"> Mật khẩu </p>
+        <p class="input"> {{ form.password }} </p>
+        <input type="hidden" name="next" value="{{ next }}" />
+        <button>Đăng nhập</button>
+      </form>
+    </div>
+  </div>
+{% endblock %}

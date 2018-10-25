@@ -1,0 +1,117 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+  <script type="text/javascript">
+    $(function() {
+      $("#sortedTable").tablesorter({
+        sortList: [[1,1],[1,1]],
+        widgets: ['stickyHeaders', 'filter', 'math'],
+        widgetOptions: {
+          math_mask     : '',
+        }
+      });
+
+      $('input.checkbox').change(function(){
+        $(this).parent().parent().children().children('select, input.new-form').prop('disabled', $(this).prop('checked') == false);
+      }).change();
+    });
+  </script>
+  {% load static %}
+  <link rel="stylesheet" href="{% static 'css/dropdown.css' %}">
+
+  {% if err_mess %}
+    <h4 style="color: red">{{err_mess}}</h4>
+  {% endif %}
+
+  {% if staffs_tests and tests_info %}
+    <h3> Danh sách nhân sự </h3>
+    <form action="" method="post">
+      {% csrf_token %}
+      <table id="sortedTable" class="tablesorter">
+        <thead><tr>
+          <th style="width: 7%"> Mã NV </th>
+          <th> Họ và Tên </th>
+          <th> Người đánh giá </th>
+          <th> Ngày </th>
+          <th> Bằng cấp </th>
+          {% for qa in tests_info %}
+            <th style="background-color: {% cycle '#a4a4a4' '#e8e8e8' as stripe%}">
+              {{ qa.question.code }}</th>
+          {% endfor %}
+          {% resetcycle stripe %}
+          <th> Bậc năng lực </th>
+        </tr></thead>
+        <tfoot>
+          <tr>
+            <th class="non"><input class="checkbox" type="checkbox"></th>
+            <th><select name="next-staff">
+              <option selected value="None"> -- </option>
+              {% for staff in staff_list %}
+                <option value="{{staff}}">{{ staff }}</option>
+              {% endfor %}
+            </select></th>
+            <th><select name="next-sponsor">
+              <option selected value="None"> -- </option>
+              {% for staff in staff_list %}
+                <option value="{{staff}}">{{ staff }}</option>
+              {% endfor %}
+            </select></th>
+            <th><input class="new-form" type="date" name="next-date" value="{% now "Y-m-d" %}"></th>
+            <th class="non"></th>
+            {% for qa in tests_info %}
+              <th style="background-color: {% cycle '#a4a4a4' '#e8e8e8' as stripe%}">
+                <select name="form={{ qa.question.code }}">
+                  <option selected value="None"> -- </option>
+                  {% for answer in qa.question.answerdetail_set.all %}
+                    <option value="{{answer.rank}}">{{answer.rank}}</option>
+                  {% endfor %}
+                </select>
+              </th>
+            {% endfor %}
+           {% resetcycle stripe %}
+           <th><input class="new-form" type="submit" value="Cập nhật"/></th>
+          </tr>
+          <tr>
+            <th> Tổng </th>
+            <th data-math="col-count"></th>
+            <th colspan="{{ tests_info|length|add:"4" }}" %}></th>
+          </tr>
+        </tfoot>
+        <tbody>
+          {% for staff, tests in staffs_tests.items %}
+            {% for test in tests %}
+              <tr>
+                <td>{{ staff.MaNV }}</td>
+                <td><a href="{% url 'staff_detail' staff.pk %}">{{ staff.name }}</a></td>
+                <td>{{ test.sponsor }}</td>
+                <td>{{ test.date|date:"d/m/Y" }}</td>
+                <td>{{ staff.certi }}</td>
+                {% for qa in test.qadetail_set.all %}
+                  <td style="background-color: {% cycle stripe%}">
+                    {{ qa.answer.rank }}
+                  </td>
+                {% endfor %}
+                {% resetcycle stripe %}
+                <td>{{ test.result }}</td>
+              </tr>
+            {% endfor %}
+          {% endfor %}
+        </tbody>
+      </table>
+    </form>
+  <h4> Chú thích: </h4>
+    <ul>
+      {% for qa in tests_info %}
+        <li>{{ qa.question.code }}: {{ qa.question.text }}</li>
+          <ul>
+            {% for answer in qa.question.answerdetail_set.all %}
+            <li>{{ answer.rank }}: {{ answer.text }}</li>
+            {% endfor %}
+          </ul>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>Chưa có nhân viên nào trong dữ liệu.</p>
+    <br>
+  {% endif %}
+{% endblock %}
